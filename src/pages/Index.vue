@@ -9,12 +9,22 @@
         </div>
         <p class="text-caption text-grey q-mb-xl">Time to get active</p>
         <q-btn
+          v-if="user._id"
           outline
           rounded
           color="primary"
           size="lg"
           label="Add a new task"
           @click="openDialog"
+        />
+        <q-btn
+          v-else
+          outline
+          rounded
+          color="primary"
+          size="lg"
+          label="Login to start"
+          disable
         />
       </div>
     </template>
@@ -36,15 +46,6 @@
           size="lg"
           label="Add a new task"
           @click="openDialog"
-        />
-        <q-btn
-          v-else
-          outline
-          rounded
-          color="primary"
-          size="lg"
-          label="Login to start"
-          disable
         />
         <q-scroll-area class="q-mt-xl" style="height: 150px; width: auto">
           <template v-for="todo in todos" v-bind:key="todo.id">
@@ -76,11 +77,24 @@ const user = computed(() => {
 })
 
 watch(user, async (value) => {
-  console.log('user changed', value)
-  const storedTodos = await todoCollection.find({ user: value._id })
-  todos.value = storedTodos.map((t) => {
-    return t
-  })
+  if (!value._id) {
+    todos.value = []
+    return
+  }
+  try {
+    const storedTodos = await todoCollection.find({
+      user: value._id,
+    })
+    todos.value = storedTodos.map((t) => {
+      return {
+        _id: t._id,
+        label: t.label,
+        state: t.state,
+      }
+    })
+  } catch (error) {
+    console.error('err loading todos', error)
+  }
 })
 
 const todos = ref<ITodoItem[]>([])
@@ -101,6 +115,24 @@ const handleClicked = async ({ _id, state }: ITodoItem) => {
   }
 
   await tasksCollection.upsert(editTask)
+
+  // TODO: refresh list
+  console.log('refreshing list')
+  try {
+    const storedTodos = await todoCollection.find({
+      user: user.value._id,
+    })
+    todos.value = storedTodos.map((t) => {
+      return {
+        _id: t._id,
+        label: t.label,
+        state: t.state,
+      }
+    })
+    console.log('done refreshing list')
+  } catch (error) {
+    console.error('err loading todos', error)
+  }
 }
 
 const handleDeleted = ({ _id }: ITodoItem) => {
