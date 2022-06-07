@@ -29,12 +29,22 @@
           {{ doneTodos.length }} tasks done
         </p>
         <q-btn
+          v-if="user._id"
           outline
           rounded
           color="primary"
           size="lg"
           label="Add a new task"
           @click="openDialog"
+        />
+        <q-btn
+          v-else
+          outline
+          rounded
+          color="primary"
+          size="lg"
+          label="Login to start"
+          disable
         />
         <q-scroll-area class="q-mt-xl" style="height: 150px; width: auto">
           <template v-for="todo in todos" v-bind:key="todo.id">
@@ -51,23 +61,40 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
-import { TodoItem } from 'src/models/entities/TodoItem'
+import { useAuthStore } from 'src/store/auth'
+import { todoCollection } from 'src/boot/pouchorm'
+
+import { ITodoItem } from 'src/models/interfaces/ITodoItem'
 import PocTodoItem from 'src/components/PocTodoItem'
 
-const todos = ref<TodoItem[]>([])
+const authStore = useAuthStore()
+const user = computed(() => {
+  return authStore.user
+})
+
+watch(user, async (value) => {
+  console.log('user changed', value)
+  const storedTodos = await todoCollection.find({ user: value._id })
+  todos.value = storedTodos.map((t) => {
+    return t
+  })
+})
+
+const todos = ref<ITodoItem[]>([])
 const doneTodos = computed(() => todos.value.filter((t) => t.state === 'done'))
 
 const $q = useQuasar()
 
-const handleClicked = ({ _id, state }: TodoItem) => {
+const handleClicked = ({ _id, state }: ITodoItem) => {
   // TODO: implement
   console.log('handleClicked', { _id, state })
 }
 
-const handleDeleted = ({ _id }: TodoItem) => {
+const handleDeleted = ({ _id }: ITodoItem) => {
   // TODO: implement
+  console.log('handleClicked', { _id })
 }
 
 const openDialog = () => {
@@ -94,10 +121,6 @@ const openDialog = () => {
 
 onMounted(() => {
   // TODO: load all todos
-  todos.value = [
-    { _id: 1, label: 'Todo 1', state: 'done' },
-    { _id: 2, label: 'Todo 2', state: 'pending' },
-  ]
 })
 </script>
 

@@ -28,7 +28,7 @@ module.exports = configure(function (ctx) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://quasar.dev/quasar-cli/boot-files
-    boot: [],
+    boot: ['pouchorm', 'pinia'],
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
     css: ['app.scss'],
@@ -73,6 +73,13 @@ module.exports = configure(function (ctx) {
       chainWebpack(/* chain */) {
         //
       },
+      extendWebpack(cfg) {
+        console.log('extendWebpack')
+        cfg.experiments = {
+          ...cfg.experiments,
+          topLevelAwait: true,
+        }
+      },
     },
 
     // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-devServer
@@ -99,7 +106,7 @@ module.exports = configure(function (ctx) {
       // directives: [],
 
       // Quasar plugins
-      plugins: ['Dialog'],
+      plugins: ['Dialog', 'SessionStorage'],
     },
 
     // animations: 'all', // --- includes all animations

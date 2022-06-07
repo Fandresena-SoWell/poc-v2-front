@@ -28,18 +28,12 @@
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  name: 'PocTodoItem',
-}
-</script>
-
 <script lang="ts" setup>
 import { computed, PropType, defineEmits, defineProps } from 'vue'
-import { TodoItem } from 'src/models/entities/TodoItem'
+import { ITodoItem } from 'src/models/interfaces/ITodoItem'
 const props = defineProps({
   todo: {
-    type: Object as PropType<TodoItem>,
+    type: Object as PropType<ITodoItem>,
     required: true,
   },
 })
