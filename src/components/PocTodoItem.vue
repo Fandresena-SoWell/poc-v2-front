@@ -7,8 +7,8 @@
           false-value="pending"
           indeterminate-value="canceled"
           v-model="checked"
-          val="teal"
-          color="teal"
+          keep-color
+          :color="isLoading ? 'warning' : 'teal'"
         />
       </q-item-section>
       <q-item-section>
@@ -17,12 +17,14 @@
         </q-item-label>
       </q-item-section>
       <q-item-section avatar>
-        <q-btn
-          icon="delete"
-          flat
-          round
-          @click="$emit('delete', { _id: todo._id, state: 'canceled' })"
-        ></q-btn>
+        <div class="row">
+          <q-btn
+            icon="delete"
+            flat
+            round
+            @click="$emit('delete', { _id: todo._id, state: 'canceled' })"
+          ></q-btn>
+        </div>
       </q-item-section>
     </q-item>
   </div>
@@ -35,6 +37,10 @@ const props = defineProps({
   todo: {
     type: Object as PropType<ITodoItem>,
     required: true,
+  },
+  isLoading: {
+    type: Boolean,
+    defaults: () => true,
   },
 })
 

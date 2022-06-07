@@ -13,9 +13,13 @@ export class TaskCollection extends PouchCollection<ITask> {
   ): Promise<ITask> {
     const task = await super.upsert(item, deltaFunc)
     if (task && !item._rev) {
-      console.log('upsert item', task)
-      // TODO: execute task to API with the tasksScheduler
-      tasksScheduler.start()
+      try {
+        console.log('upsert item', task)
+        // TODO: execute task to API with the tasksScheduler
+        tasksScheduler.start()
+      } catch {
+        console.log('tasksScheduler already started')
+      }
     }
     return task
   }

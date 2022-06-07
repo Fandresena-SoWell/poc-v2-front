@@ -2,10 +2,19 @@ import { boot } from 'quasar/wrappers'
 import Promise from 'bluebird'
 import { tasksCollection, todoCollection } from './pouchorm'
 import { tasksScheduler } from './cron'
+import { useAuthStore } from 'src/store/auth'
 
 let isRunning = false
 const Spraypaint = {
-  async processTasksQueue() {
+  processTasksQueue: async () => {
+    console.log('-------processTasksQueue not ready')
+    return Promise.resolve()
+  },
+}
+
+export default boot(({ app }) => {
+  const authStore = useAuthStore()
+  Spraypaint.processTasksQueue = async () => {
     console.log('processTasksQueue')
     if (isRunning) return
 
@@ -31,11 +40,15 @@ const Spraypaint = {
           })
 
           console.log('done edit processing task', task._id)
+          console.log({ result })
           if (result) {
             const todo = await todoCollection.findOne({ _id: task.payload._id })
             todo.state = task.payload.state
             await todoCollection.upsert(todo)
             await tasksCollection.removeById(task._id)
+            console.log('removing task', task._id)
+            authStore.removeTask(task._id)
+            console.log('removed task', task._id)
           } else {
             task.state = 'error'
             await tasksCollection.upsert(task)
@@ -63,11 +76,7 @@ const Spraypaint = {
     })
 
     isRunning = false
-  },
-}
-
-export default boot(({ app }) => {
-  //
+  }
 })
 
 export { Spraypaint }

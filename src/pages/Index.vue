@@ -1,5 +1,5 @@
 <template>
-  <q-page padding class="row items-center">
+  <q-page padding class="row">
     <template v-if="todos.length === 0">
       <div class="col column q-px-md">
         <div class="q-mb-lg">
@@ -35,7 +35,7 @@
           <div class="text-h2">tasks</div>
           <div class="text-h2">for today</div>
         </div>
-        <p class="text-caption text-grey q-mb-xl">
+        <p class="text-caption text-grey q-mb-lg">
           {{ doneTodos.length }} tasks done
         </p>
         <q-btn
@@ -47,10 +47,13 @@
           label="Add a new task"
           @click="openDialog"
         />
-        <q-scroll-area class="q-mt-xl" style="height: 150px; width: auto">
+        <q-scroll-area class="q-mt-xl" style="min-height: 200px; width: auto">
           <template v-for="todo in todos" v-bind:key="todo.id">
             <poc-todo-item
               :todo="todo"
+              :is-loading="
+                tasks.findIndex((t) => t.payload._id === todo._id) !== -1
+              "
               @click="handleClicked"
               @delete="handleDeleted"
             ></poc-todo-item>
@@ -62,7 +65,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from 'src/store/auth'
 import { todoCollection, tasksCollection } from 'src/boot/pouchorm'
@@ -73,48 +76,14 @@ import { ITask } from 'src/models/interfaces/ITask'
 
 const authStore = useAuthStore()
 const user = computed(() => {
-  return authStore.user
+  return authStore.getUser
 })
 
-watch(user, async (value) => {
-  if (!value._id) {
-    todos.value = []
-    return
-  }
-  try {
-    const storedTodos = await todoCollection.find({
-      user: value._id,
-    })
-    todos.value = storedTodos.map((t) => {
-      return {
-        _id: t._id,
-        label: t.label,
-        state: t.state,
-      }
-    })
-  } catch (error) {
-    console.error('err loading todos', error)
-  }
+const tasks = computed(() => {
+  return authStore.getTasks
 })
 
-const todos = ref<ITodoItem[]>([])
-const doneTodos = computed(() => todos.value.filter((t) => t.state === 'done'))
-
-const $q = useQuasar()
-
-const handleClicked = async ({ _id, state }: ITodoItem) => {
-  console.log('handleClicked', { _id, state })
-  const editTask: ITask = {
-    type: 'edit',
-    state: 'pending',
-    payload: {
-      _id,
-      state,
-    },
-  }
-
-  await tasksCollection.upsert(editTask)
-
+const refreshList = async () => {
   // TODO: refresh list
   console.log('refreshing list')
   try {
@@ -132,6 +101,41 @@ const handleClicked = async ({ _id, state }: ITodoItem) => {
   } catch (error) {
     console.error('err loading todos', error)
   }
+}
+
+watch(user, async (value) => {
+  if (!value._id) {
+    todos.value = []
+    return
+  }
+  await refreshList()
+})
+
+watch(tasks, async (value, oldValue) => {
+  if (value.length < oldValue.length) {
+    await refreshList()
+  }
+})
+
+const todos = ref<ITodoItem[]>([])
+const doneTodos = computed(() => todos.value.filter((t) => t.state === 'done'))
+
+const $q = useQuasar()
+
+const handleClicked = async ({ _id, state }: ITodoItem) => {
+  if (!_id) return
+
+  console.log('handleClicked', { _id, state })
+  const editTask: ITask = {
+    type: 'edit',
+    state: 'pending',
+    payload: {
+      _id,
+      state,
+    },
+  }
+  authStore.pushTask(editTask)
+  await tasksCollection.upsert(editTask)
 }
 
 const handleDeleted = ({ _id }: ITodoItem) => {

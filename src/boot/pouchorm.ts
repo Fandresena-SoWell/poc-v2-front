@@ -24,6 +24,9 @@ export default boot(async () => {
     { label: 'Todo Fandresena 1', state: 'pending', user: users[0]._id },
     { label: 'Todo Fandresena 2', state: 'pending', user: users[0]._id },
     { label: 'Todo Fandresena 3', state: 'done', user: users[0]._id },
+    { label: 'Todo Fandresena 4', state: 'pending', user: users[0]._id },
+    { label: 'Todo Fandresena 5', state: 'pending', user: users[0]._id },
+    { label: 'Todo Fandresena 6', state: 'done', user: users[0]._id },
     { label: 'Todo Guest 1', state: 'pending', user: users[1]._id },
     { label: 'Todo Guest 2', state: 'pending', user: users[1]._id },
   ])

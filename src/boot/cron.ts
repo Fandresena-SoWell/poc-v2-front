@@ -15,7 +15,7 @@ export default boot(({}) => {
     {
       isOneTimeTask: false,
       errorHandler: (err) => {
-        console.log('err registering tasksScheduler')
+        console.log('err registering tasksScheduler', err)
       },
     }
   )

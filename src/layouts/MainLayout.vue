@@ -74,7 +74,7 @@ const $q = useQuasar()
 
 const authStore = useAuthStore()
 const user = computed(() => {
-  return authStore.user
+  return authStore.getUser
 })
 
 const _login = (name: string) => {
