@@ -1,9 +1,14 @@
 import { boot } from 'quasar/wrappers'
 import { PouchORM } from 'pouchorm'
-import { UserCollection, TodoCollection } from 'src/models/collections'
+import {
+  UserCollection,
+  TodoCollection,
+  TaskCollection,
+} from 'src/models/collections'
 
 const userCollection = new UserCollection('users')
 const todoCollection = new TodoCollection('todos')
+const tasksCollection = new TaskCollection('tasks')
 
 export default boot(async () => {
   PouchORM.LOGGING = true
@@ -24,4 +29,4 @@ export default boot(async () => {
   ])
 })
 
-export { userCollection, todoCollection }
+export { userCollection, todoCollection, tasksCollection }

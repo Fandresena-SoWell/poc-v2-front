@@ -64,10 +64,11 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from 'src/store/auth'
-import { todoCollection } from 'src/boot/pouchorm'
+import { todoCollection, tasksCollection } from 'src/boot/pouchorm'
 
 import { ITodoItem } from 'src/models/interfaces/ITodoItem'
 import PocTodoItem from 'src/components/PocTodoItem'
+import { ITask } from 'src/models/interfaces/ITask'
 
 const authStore = useAuthStore()
 const user = computed(() => {
@@ -87,9 +88,19 @@ const doneTodos = computed(() => todos.value.filter((t) => t.state === 'done'))
 
 const $q = useQuasar()
 
-const handleClicked = ({ _id, state }: ITodoItem) => {
+const handleClicked = async ({ _id, state }: ITodoItem) => {
   // TODO: implement
   console.log('handleClicked', { _id, state })
+  const editTask: ITask = {
+    type: 'edit',
+    state: 'pending',
+    payload: {
+      _id,
+      state,
+    },
+  }
+
+  await tasksCollection.upsert(editTask)
 }
 
 const handleDeleted = ({ _id }: ITodoItem) => {
