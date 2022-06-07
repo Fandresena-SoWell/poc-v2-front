@@ -1,117 +1,95 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
+    <q-header>
       <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
+        <q-toolbar-title> POC V2 Front </q-toolbar-title>
 
-        <q-toolbar-title>
-          Quasar App
-        </q-toolbar-title>
+        <q-btn-dropdown stretch flat :label="user.name">
+          <q-list>
+            <q-item
+              v-if="user"
+              clickable
+              v-close-popup
+              tabindex="0"
+              @click="logout"
+            >
+              <q-item-section avatar>
+                <q-avatar icon="clear" color="secondary" text-color="white" />
+              </q-item-section>
+              <q-item-section @click="clearDB">
+                <q-item-label>Clear database</q-item-label>
+              </q-item-section>
+            </q-item>
 
-        <div>Quasar v{{ $q.version }}</div>
+            <q-item
+              v-if="user"
+              clickable
+              v-close-popup
+              tabindex="0"
+              @click="logout"
+            >
+              <q-item-section avatar>
+                <q-avatar icon="logout" color="secondary" text-color="white" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Log out</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item v-else clickable v-close-popup tabindex="0" @click="login">
+              <q-item-section avatar>
+                <q-avatar icon="login" color="secondary" text-color="white" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Log in</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
       </q-toolbar>
     </q-header>
 
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-    >
-      <q-list>
-        <q-item-label
-          header
-        >
-          Essential Links
-        </q-item-label>
-
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
-        />
-      </q-list>
-    </q-drawer>
-
     <q-page-container>
-      <router-view />
+      <Suspense>
+        <router-view />
+      </Suspense>
     </q-page-container>
   </q-layout>
 </template>
 
-<script lang="ts">
-import EssentialLink from 'components/EssentialLink.vue'
+<script lang="ts" setup>
+import { reactive } from 'vue'
+import { TodoRepositorySingletonFactory } from 'src/models/repositories/TodoRepository'
+import { useQuasar } from 'quasar'
 
-const linksList = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
-  }
-];
+const $q = useQuasar()
 
-import { defineComponent, ref } from 'vue'
-
-export default defineComponent({
-  name: 'MainLayout',
-
-  components: {
-    EssentialLink
-  },
-
-  setup () {
-    const leftDrawerOpen = ref(false)
-
-    return {
-      essentialLinks: linksList,
-      leftDrawerOpen,
-      toggleLeftDrawer () {
-        leftDrawerOpen.value = !leftDrawerOpen.value
-      }
-    }
-  }
+const user = reactive({
+  name: 'Fandresena',
 })
+
+const login = () => {
+  // TODO: implement
+}
+
+const logout = () => {
+  // TODO: implement
+}
+
+const clearDB = () => {
+  $q.dialog({
+    title: 'Confirmation',
+    message: 'Are you sure you want to clear the database?',
+    cancel: true,
+    persistent: true,
+  })
+    .onOk(() => {
+      // TODO: implement
+    })
+    .onCancel(() => {
+      // console.log('>>>> Cancel')
+    })
+    .onDismiss(() => {
+      // console.log('I am triggered on both OK and Cancel')
+    })
+}
 </script>
