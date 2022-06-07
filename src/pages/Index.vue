@@ -103,7 +103,6 @@ const doneTodos = computed(() => todos.value.filter((t) => t.state === 'done'))
 const $q = useQuasar()
 
 const handleClicked = async ({ _id, state }: ITodoItem) => {
-  // TODO: implement
   console.log('handleClicked', { _id, state })
   const editTask: ITask = {
     type: 'edit',
@@ -161,10 +160,6 @@ const openDialog = () => {
       // console.log('I am triggered on both OK and Cancel')
     })
 }
-
-onMounted(() => {
-  // TODO: load all todos
-})
 </script>
 
 <style lang="sass" scope>

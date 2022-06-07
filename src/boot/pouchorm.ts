@@ -11,7 +11,7 @@ const todoCollection = new TodoCollection('todos')
 const tasksCollection = new TaskCollection('tasks')
 
 export default boot(async () => {
-  PouchORM.LOGGING = true
+  PouchORM.LOGGING = false
 
   // NOTE: adding dummy users
   await userCollection.clear()

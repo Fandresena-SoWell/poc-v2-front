@@ -68,6 +68,7 @@ import { computed, onMounted } from 'vue'
 import { userCollection } from 'src/boot/pouchorm'
 import { useAuthStore } from 'src/store/auth'
 import { IUser } from 'src/models/interfaces/IUser'
+import { tasksScheduler } from 'src/boot/cron'
 
 const $q = useQuasar()
 
@@ -94,6 +95,9 @@ const _login = (name: string) => {
         } else {
           console.log(`username ${name} cannot be found in local db`)
         }
+      })
+      .then(() => {
+        tasksScheduler.start()
       })
       .catch((err) => {
         console.error(`error searching ${name} in local db`, err)
@@ -129,9 +133,11 @@ const logout = () => {
     name: '',
   })
   $q.sessionStorage.set('user', '')
+  tasksScheduler.stop()
 }
 
 onMounted(async () => {
+  tasksScheduler.stop()
   const storedUser = $q.sessionStorage.getItem('user')
   if (storedUser) {
     const user = await userCollection.findOneOrFail({ name: storedUser })

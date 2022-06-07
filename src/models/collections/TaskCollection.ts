@@ -1,5 +1,5 @@
 import { PouchORM, PouchCollection } from 'pouchorm'
-import { Spraypaint } from 'src/boot/spraypaint'
+import { tasksScheduler } from 'src/boot/cron'
 import { ITask } from '../interfaces/ITask'
 
 export class TaskCollection extends PouchCollection<ITask> {
@@ -14,8 +14,8 @@ export class TaskCollection extends PouchCollection<ITask> {
     const task = await super.upsert(item, deltaFunc)
     if (task && !item._rev) {
       console.log('upsert item', task)
-      // TODO: execute task to API with Spraypaint
-      await Spraypaint.processQueue()
+      // TODO: execute task to API with the tasksScheduler
+      tasksScheduler.start()
     }
     return task
   }
