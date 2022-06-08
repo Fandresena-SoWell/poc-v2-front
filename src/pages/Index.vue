@@ -69,6 +69,7 @@ import { ref, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from 'src/store/auth'
 import { todoCollection, tasksCollection } from 'src/boot/pouchorm'
+import lodash from 'lodash'
 
 import { ITodoItem } from 'src/models/interfaces/ITodoItem'
 import PocTodoItem from 'src/components/PocTodoItem'
@@ -83,23 +84,35 @@ const tasks = computed(() => {
   return authStore.getTasks
 })
 
-const refreshList = async () => {
+const refreshList = async (todoId?: string) => {
   // TODO: refresh list
-  console.log('refreshing list')
-  try {
-    const storedTodos = await todoCollection.find({
-      user: user.value._id,
-    })
-    todos.value = storedTodos.map((t) => {
-      return {
-        _id: t._id,
-        label: t.label,
-        state: t.state,
+  console.log('refreshing list', todoId)
+  if (!todoId) {
+    try {
+      const storedTodos = await todoCollection.find({
+        user: user.value._id,
+      })
+      todos.value = storedTodos.map((t) => {
+        return {
+          _id: t._id,
+          label: t.label,
+          state: t.state,
+        }
+      })
+      console.log('done refreshing list')
+    } catch (error) {
+      console.error('err loading todos', error)
+    }
+  } else {
+    const storedTodo = await todoCollection.findById(todoId)
+    const index = todos.value.findIndex((t) => t._id === todoId)
+    if (index !== -1) {
+      todos.value[index] = {
+        _id: storedTodo._id,
+        label: storedTodo.label,
+        state: storedTodo.state,
       }
-    })
-    console.log('done refreshing list')
-  } catch (error) {
-    console.error('err loading todos', error)
+    }
   }
 }
 
@@ -113,7 +126,9 @@ watch(user, async (value) => {
 
 watch(tasks, async (value, oldValue) => {
   if (value.length < oldValue.length) {
-    await refreshList()
+    const differences = lodash.differenceBy(oldValue, value, (elem) => elem._id)
+    if (differences.length === 1) await refreshList(differences[0].payload._id)
+    else await refreshList()
   }
 })
 
