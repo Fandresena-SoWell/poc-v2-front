@@ -9,6 +9,7 @@
           v-model="checked"
           keep-color
           :color="isLoading ? 'warning' : 'teal'"
+          :disable="isLoading"
         />
       </q-item-section>
       <q-item-section>
@@ -23,6 +24,7 @@
             flat
             round
             @click="$emit('delete', { _id: todo._id, state: 'canceled' })"
+            :disable="isLoading"
           ></q-btn>
         </div>
       </q-item-section>

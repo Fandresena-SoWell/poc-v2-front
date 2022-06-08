@@ -83,6 +83,29 @@ export default boot(({ app }) => {
             await tasksCollection.upsert(task)
           }
         }
+      } else if (task.type === 'delete') {
+        if (task._id && task.payload._id) {
+          console.log('processing delete task', task._id)
+          // TODO: send with spraypaint
+          const result = await new Promise<boolean>((resolve) => {
+            setTimeout(() => {
+              return resolve(true)
+            }, 1000)
+          })
+
+          console.log('done processing delete task', task._id)
+          if (result) {
+            await todoCollection.removeById(task.payload._id)
+
+            await tasksCollection.removeById(task._id)
+            console.log('removing task', task._id)
+            authStore.removeTask(task._id)
+            console.log('removed task', task._id)
+          } else {
+            task.state = 'error'
+            await tasksCollection.upsert(task)
+          }
+        }
       } else {
         if (task._id && task.payload._id && task.payload.state) {
           console.log('processing default task', task._id)

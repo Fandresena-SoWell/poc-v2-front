@@ -159,9 +159,18 @@ const handleClicked = async ({ _id, state }: ITodoItem) => {
   await tasksCollection.upsert(editTask)
 }
 
-const handleDeleted = ({ _id }: ITodoItem) => {
+const handleDeleted = async ({ _id }: ITodoItem) => {
   // TODO: implement
   console.log('handleClicked', { _id })
+  const deleteTask: ITask = {
+    type: 'delete',
+    state: 'pending',
+    payload: {
+      _id,
+    },
+  }
+  authStore.pushTask(deleteTask)
+  await tasksCollection.upsert(deleteTask)
 }
 
 const openDialog = () => {
