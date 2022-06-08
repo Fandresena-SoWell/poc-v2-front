@@ -127,8 +127,14 @@ watch(user, async (value) => {
 watch(tasks, async (value, oldValue) => {
   if (value.length < oldValue.length) {
     const differences = lodash.differenceBy(oldValue, value, (elem) => elem._id)
-    if (differences.length === 1) await refreshList(differences[0].payload._id)
-    else await refreshList()
+    if (differences.length === 1) {
+      const task = differences[0]
+      if (task.type === 'edit') {
+        await refreshList(task.payload._id)
+      } else {
+        await refreshList()
+      }
+    } else await refreshList()
   }
 })
 
@@ -170,7 +176,17 @@ const openDialog = () => {
     persistent: true,
   })
     .onOk((label: string) => {
-      // TODO: implement
+      const createTask: ITask = {
+        type: 'create',
+        state: 'pending',
+        payload: {
+          label,
+          state: 'pending',
+          user: authStore.getUser._id,
+        },
+      }
+      authStore.pushTask(createTask)
+      void tasksCollection.upsert(createTask)
     })
     .onCancel(() => {
       // console.log('>>>> Cancel')

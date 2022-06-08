@@ -7,5 +7,6 @@ export interface ITask extends IModel {
     _id?: string
     state?: 'pending' | 'done' | 'canceled'
     label?: string
+    user?: string
   }
 }

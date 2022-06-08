@@ -3,6 +3,7 @@ import Promise from 'bluebird'
 import { tasksCollection, todoCollection } from './pouchorm'
 import { tasksScheduler } from './cron'
 import { useAuthStore } from 'src/store/auth'
+import { ITodoItem } from 'src/models/interfaces/ITodoItem'
 
 let isRunning = false
 const Spraypaint = {
@@ -45,6 +46,34 @@ export default boot(({ app }) => {
             const todo = await todoCollection.findOne({ _id: task.payload._id })
             todo.state = task.payload.state
             await todoCollection.upsert(todo)
+            await tasksCollection.removeById(task._id)
+            console.log('removing task', task._id)
+            authStore.removeTask(task._id)
+            console.log('removed task', task._id)
+          } else {
+            task.state = 'error'
+            await tasksCollection.upsert(task)
+          }
+        }
+      } else if (task.type === 'create') {
+        if (task._id && task.payload.label) {
+          console.log('processing create task', task._id)
+          // TODO: send with spraypaint
+          const result = await new Promise<boolean>((resolve) => {
+            setTimeout(() => {
+              return resolve(true)
+            }, 1000)
+          })
+
+          console.log('done processing create task', task._id)
+          if (result) {
+            const todo: ITodoItem = {
+              label: task.payload.label,
+              state: task.payload.state || 'pending',
+              user: task.payload.user,
+            }
+            await todoCollection.upsert(todo)
+
             await tasksCollection.removeById(task._id)
             console.log('removing task', task._id)
             authStore.removeTask(task._id)
