@@ -1,6 +1,15 @@
 import { defineStore } from 'pinia'
+
+import { tasksScheduler } from 'src/boot/cron'
+import { todoCollection, userCollection } from 'src/boot/pouchorm'
+import { SessionStorage, Loading } from 'quasar'
+
+import { Promise } from 'bluebird'
+
 import { ITask } from 'src/models/interfaces/ITask'
 import { IUser } from 'src/models/interfaces/IUser'
+import { SPUser } from 'src/models/spraypaint'
+import { ITodoItem } from 'src/models/interfaces/ITodoItem'
 
 // useStore could be anything like useUser, useCart
 // the first argument is a unique id of the store across your application
@@ -24,6 +33,77 @@ export const useAuthStore = defineStore('auth', {
     },
   },
   actions: {
+    async login(name: string) {
+      if (!name) return Promise.resolve()
+
+      Loading.show()
+
+      let result
+      try {
+        result = await SPUser.where({ name }).includes('todos').first()
+      } catch (err) {
+        console.log('error login', err)
+        // TODO: remove mock login
+        result = {
+          data: {
+            id: '1',
+            name,
+            todos: [
+              {
+                label: 'Todo 1',
+                state: 'pending',
+              },
+              {
+                label: 'Todo 2',
+                state: 'pending',
+              },
+            ] as ITodoItem[],
+          },
+        }
+      }
+
+      if (result?.data) {
+        const remoteUser = result.data
+        await userCollection.clear()
+        await todoCollection.clear()
+
+        const localUser = await userCollection.upsert({ name: remoteUser.name })
+        await todoCollection.bulkUpsert(
+          remoteUser.todos.map((todo) => {
+            return {
+              label: todo.label,
+              state: todo.state,
+              user: localUser._id,
+            }
+          })
+        )
+      }
+
+      userCollection
+        .findOne({ name })
+        .then((storedUser: IUser | null) => {
+          console.log('_login storedUser', {
+            name,
+            storedUser,
+          })
+          if (storedUser?._id) {
+            this.setUser({
+              _id: storedUser._id,
+              name: storedUser.name,
+            })
+            SessionStorage.set('user', storedUser.name)
+            tasksScheduler.start()
+          } else {
+            console.log(`username ${name} cannot be found in local db`)
+          }
+        })
+        .catch((err) => {
+          console.error(`error searching ${name} in local db`, err)
+        })
+        .finally(() => {
+          Loading.hide()
+        })
+    },
     setUser(user: IUser) {
       this._id = user._id || ''
       this.name = user.name

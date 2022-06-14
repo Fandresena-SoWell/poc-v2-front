@@ -67,7 +67,6 @@ import { useQuasar } from 'quasar'
 import { computed, onMounted } from 'vue'
 import { userCollection } from 'src/boot/pouchorm'
 import { useAuthStore } from 'src/store/auth'
-import { IUser } from 'src/models/interfaces/IUser'
 import { tasksScheduler } from 'src/boot/cron'
 
 const $q = useQuasar()
@@ -76,34 +75,6 @@ const authStore = useAuthStore()
 const user = computed(() => {
   return authStore.getUser
 })
-
-const _login = (name: string) => {
-  if (name) {
-    userCollection
-      .findOne({ name })
-      .then((storedUser: IUser | null) => {
-        console.log('_login storedUser', {
-          name,
-          storedUser,
-        })
-        if (storedUser?._id) {
-          authStore.setUser({
-            _id: storedUser._id,
-            name: storedUser.name,
-          })
-          $q.sessionStorage.set('user', storedUser.name)
-        } else {
-          console.log(`username ${name} cannot be found in local db`)
-        }
-      })
-      .then(() => {
-        tasksScheduler.start()
-      })
-      .catch((err) => {
-        console.error(`error searching ${name} in local db`, err)
-      })
-  }
-}
 
 const loginDialog = () => {
   $q.dialog({
@@ -117,7 +88,7 @@ const loginDialog = () => {
     persistent: true,
   })
     .onOk((name: string) => {
-      _login(name)
+      void authStore.login(name)
     })
     .onCancel(() => {
       // console.log('>>>> Cancel')
@@ -140,9 +111,14 @@ onMounted(async () => {
   tasksScheduler.stop()
   const storedUser = $q.sessionStorage.getItem('user')
   if (storedUser) {
-    const user = await userCollection.findOneOrFail({ name: storedUser })
-    if (user) {
-      _login(user.name)
+    try {
+      const user = await userCollection.findOneOrFail({ name: storedUser })
+      if (user) {
+        await authStore.login(user.name)
+      }
+    } catch {
+      // NOTE: we couldn't find the user on the localDB
+      logout()
     }
   }
 })
