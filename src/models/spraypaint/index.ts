@@ -14,6 +14,7 @@ export class ApplicationRecord extends SpraypaintBase {
 
 @Model()
 export class SPTodoItem extends ApplicationRecord implements ITodoItem {
+  static jsonapiType = 'todos'
   @Attr()
   label!: string
   @Attr
@@ -24,6 +25,7 @@ export class SPTodoItem extends ApplicationRecord implements ITodoItem {
 
 @Model()
 export class SPUser extends ApplicationRecord implements IUser {
+  static jsonapiType = 'users'
   @Attr()
   name!: string
   @HasMany()

@@ -50,10 +50,12 @@ export const useAuthStore = defineStore('auth', {
             name,
             todos: [
               {
+                id: '1',
                 label: 'Todo 1',
                 state: 'pending',
               },
               {
+                id: '2',
                 label: 'Todo 2',
                 state: 'pending',
               },
@@ -71,6 +73,7 @@ export const useAuthStore = defineStore('auth', {
         await todoCollection.bulkUpsert(
           remoteUser.todos.map((todo) => {
             return {
+              id: todo.id,
               label: todo.label,
               state: todo.state,
               user: localUser._id,

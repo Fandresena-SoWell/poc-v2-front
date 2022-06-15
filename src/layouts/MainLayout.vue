@@ -7,21 +7,6 @@
         <q-btn-dropdown stretch flat :label="user.name || 'Menu'">
           <q-list>
             <q-item
-              v-if="user"
-              clickable
-              v-close-popup
-              tabindex="0"
-              @click="logout"
-            >
-              <q-item-section avatar>
-                <q-avatar icon="clear" color="secondary" text-color="white" />
-              </q-item-section>
-              <q-item-section @click="clearDB">
-                <q-item-label>Clear database</q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item
               v-if="user.name"
               clickable
               v-close-popup
@@ -47,6 +32,20 @@
               </q-item-section>
               <q-item-section>
                 <q-item-label>Log in</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item
+              v-if="user"
+              clickable
+              v-close-popup
+              tabindex="0"
+              @click="logout"
+            >
+              <q-item-section avatar>
+                <q-avatar icon="clear" color="secondary" text-color="white" />
+              </q-item-section>
+              <q-item-section @click="clearDB">
+                <q-item-label>Clear database</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>

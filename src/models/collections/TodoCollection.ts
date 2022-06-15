@@ -4,7 +4,7 @@ import { ITodoItem } from '../interfaces/ITodoItem'
 
 export class TodoCollection extends PouchCollection<ITodoItem> {
   async beforeInit(): Promise<void> {
-    await this.addIndex(['label', 'state', 'user'])
+    await this.addIndex(['id', 'label', 'state', 'user'])
   }
 
   async clear(): Promise<void> {
